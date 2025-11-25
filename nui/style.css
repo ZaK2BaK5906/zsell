@@ -1,0 +1,604 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    overflow: hidden;
+}
+
+.container {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) translateZ(0);
+    -webkit-transform: translate(-50%, -50%) translateZ(0);
+    z-index: 9999;
+    animation: fadeIn 0.3s ease-in-out;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    perspective: 1000px;
+    -webkit-perspective: 1000px;
+    will-change: opacity, transform;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.9) translateZ(0);
+    }
+    to {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1) translateZ(0);
+    }
+}
+
+.tablet {
+    width: 950px;
+    height: 650px;
+    background: linear-gradient(135deg, rgba(20, 20, 30, 0.98), rgba(30, 30, 45, 0.98));
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8), 0 0 0 3px rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    overflow: hidden;
+    animation: slideUp 0.4s ease-out;
+    display: flex;
+    flex-direction: column;
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    will-change: transform, opacity;
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(50px) translateZ(0);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0) translateZ(0);
+        opacity: 1;
+    }
+}
+
+.tablet-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 20px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.header-left i {
+    font-size: 28px;
+    color: #fff;
+}
+
+.header-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.close-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: #fff;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    font-size: 18px;
+}
+
+.close-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: rotate(90deg);
+}
+
+.tablet-body {
+    padding: 25px;
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.location-info {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.location-info h2 {
+    font-size: 32px;
+    color: #fff;
+    margin-bottom: 10px;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.location-subtitle {
+    font-size: 16px;
+    color: rgba(255, 255, 255, 0.7);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.drug-options {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.drug-card {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 15px;
+    padding: 25px;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+}
+
+.drug-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.drug-card:hover {
+    border-color: rgba(102, 126, 234, 0.5);
+    transform: translateY(-5px) translateZ(0);
+    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+}
+
+.drug-card:hover::before {
+    opacity: 1;
+}
+
+.drug-icon {
+    width: 70px;
+    height: 70px;
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+    position: relative;
+    z-index: 1;
+}
+
+.drug-icon.weed {
+    background: linear-gradient(135deg, #11998e, #38ef7d);
+    box-shadow: 0 5px 20px rgba(17, 153, 142, 0.4);
+}
+
+.drug-icon.cocaine {
+    background: linear-gradient(135deg, #ee0979, #ff6a00);
+    box-shadow: 0 5px 20px rgba(238, 9, 121, 0.4);
+}
+
+.drug-icon.meth {
+    background: linear-gradient(135deg, #4facfe, #00f2fe);
+    box-shadow: 0 5px 20px rgba(79, 172, 254, 0.4);
+}
+
+.drug-icon i {
+    font-size: 32px;
+    color: #fff;
+    transition: transform 0.5s ease;
+}
+
+.drug-card:hover .drug-icon i {
+    transform: rotate(360deg) scale(1.1);
+}
+
+.drug-content {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+}
+
+.drug-content h3 {
+    font-size: 20px;
+    color: #fff;
+    margin-bottom: 10px;
+}
+
+.drug-info {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 13px;
+}
+
+.info-label {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.select-drug-btn {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.select-drug-btn:hover {
+    background: linear-gradient(135deg, #764ba2, #667eea);
+    box-shadow: 0 5px 20px rgba(102, 126, 234, 0.5);
+    transform: translateY(-2px);
+}
+
+/* Negotiation Panel */
+.negotiation-panel {
+    animation: slideIn 0.4s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.selected-drug-info {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 15px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 25px;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.drug-icon-large {
+    width: 80px;
+    height: 80px;
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+}
+
+.drug-icon-large i {
+    font-size: 40px;
+    color: #fff;
+}
+
+.drug-details h3 {
+    font-size: 24px;
+    color: #fff;
+    margin-bottom: 8px;
+}
+
+.drug-details p {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.price-range {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 25px;
+}
+
+.range-info {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 15px 25px;
+    border-radius: 10px;
+    flex: 1;
+    margin: 0 5px;
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.range-label {
+    display: block;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.6);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 5px;
+}
+
+.range-value {
+    display: block;
+    font-size: 20px;
+    color: #667eea;
+    font-weight: 700;
+}
+
+.input-group {
+    margin-bottom: 20px;
+}
+
+.input-group label {
+    display: block;
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.8);
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    color: #fff;
+    font-size: 18px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.input-group input:focus {
+    outline: none;
+    border-color: rgba(102, 126, 234, 0.5);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.price-indicator {
+    margin-top: 10px;
+}
+
+.indicator-bar {
+    width: 100%;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 8px;
+}
+
+.indicator-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #11998e, #f5af19, #ee0979);
+    border-radius: 10px;
+    transition: width 0.3s ease;
+}
+
+.indicator-text {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.7);
+    text-align: center;
+    display: block;
+}
+
+.total-display {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.2), rgba(118, 75, 162, 0.2));
+    padding: 20px;
+    border-radius: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    border: 2px solid rgba(102, 126, 234, 0.3);
+}
+
+.total-display span:first-child {
+    font-size: 16px;
+    color: rgba(255, 255, 255, 0.8);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.total-amount {
+    font-size: 32px;
+    color: #fff;
+    font-weight: 700;
+}
+
+.action-buttons {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 15px;
+}
+
+.action-btn {
+    padding: 15px;
+    border: none;
+    border-radius: 10px;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.back-btn {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.back-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: translateY(-2px);
+}
+
+.negotiate-btn {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+}
+
+.negotiate-btn:hover {
+    background: linear-gradient(135deg, #764ba2, #667eea);
+    box-shadow: 0 5px 20px rgba(102, 126, 234, 0.5);
+    transform: translateY(-2px);
+}
+
+.tablet-footer {
+    margin-top: 20px;
+}
+
+.warning-box {
+    background: rgba(255, 152, 0, 0.2);
+    border: 2px solid rgba(255, 152, 0, 0.5);
+    border-radius: 10px;
+    padding: 15px 20px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    color: #ff9800;
+    font-size: 14px;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.7;
+    }
+}
+
+.warning-box i {
+    font-size: 24px;
+}
+
+/* Animations */
+.drug-card {
+    animation: cardSlideIn 0.5s ease-out;
+}
+
+.drug-card:nth-child(1) {
+    animation-delay: 0.1s;
+}
+
+.drug-card:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.drug-card:nth-child(3) {
+    animation-delay: 0.3s;
+}
+
+@keyframes cardSlideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-30px) translateZ(0);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0) translateZ(0);
+    }
+}
+
+/* Scrollbar */
+.tablet-body::-webkit-scrollbar {
+    width: 8px;
+}
+
+.tablet-body::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+}
+
+.tablet-body::-webkit-scrollbar-thumb {
+    background: rgba(102, 126, 234, 0.5);
+    border-radius: 10px;
+}
+
+.tablet-body::-webkit-scrollbar-thumb:hover {
+    background: rgba(102, 126, 234, 0.7);
+}
+
+/* Responsive */
+@media (max-width: 1000px) {
+    .drug-options {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .tablet {
+        width: 850px;
+        height: 700px;
+    }
+}
+
+@media (max-width: 900px) {
+    .drug-options {
+        grid-template-columns: 1fr;
+    }
+
+    .tablet {
+        width: 700px;
+        height: 650px;
+    }
+
+    .header-title {
+        font-size: 16px;
+    }
+
+    .location-info h2 {
+        font-size: 24px;
+    }
+}
+
+@media (max-width: 750px) {
+    .tablet {
+        width: 90vw;
+        height: 80vh;
+    }
+}

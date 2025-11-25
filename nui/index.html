@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Z-SELL - Vente de Drogue</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container" id="app" style="display: none;">
+        <div class="tablet">
+            <div class="tablet-header">
+                <div class="header-left">
+                    <i class="fas fa-cannabis"></i>
+                    <span class="header-title" id="headerTitle">VENTE DE DROGUE</span>
+                </div>
+                <div class="header-right">
+                    <button class="close-btn" id="closeBtn">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="tablet-body">
+                <div class="location-info">
+                    <h2 id="mainTitle">SÉLECTION DE DROGUE</h2>
+                    <p class="location-subtitle" id="subtitle">Choisissez la drogue à vendre et fixez votre prix</p>
+                </div>
+
+                <div class="drug-options" id="drugOptions">
+                    <!-- Les options de drogue seront ajoutées dynamiquement ici -->
+                </div>
+
+                <div class="negotiation-panel" id="negotiationPanel" style="display: none;">
+                    <div class="selected-drug-info">
+                        <div class="drug-icon-large">
+                            <i class="fas fa-pills"></i>
+                        </div>
+                        <div class="drug-details">
+                            <h3 id="selectedDrugName">Weed</h3>
+                            <p id="selectedDrugStock">Stock: <span>10</span> pochons</p>
+                        </div>
+                    </div>
+
+                    <div class="price-range">
+                        <div class="range-info">
+                            <span class="range-label">Prix min</span>
+                            <span class="range-value" id="minPrice">$200</span>
+                        </div>
+                        <div class="range-info">
+                            <span class="range-label">Prix max</span>
+                            <span class="range-value" id="maxPrice">$500</span>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="quantityInput" id="quantityLabel">Quantité à vendre</label>
+                        <input type="number" id="quantityInput" min="1" value="1">
+                    </div>
+
+                    <div class="input-group">
+                        <label for="priceInput" id="priceLabel">Prix par pochon ($)</label>
+                        <input type="number" id="priceInput" min="0" step="10" value="300">
+                        <div class="price-indicator">
+                            <div class="indicator-bar">
+                                <div class="indicator-fill" id="priceIndicator"></div>
+                            </div>
+                            <span class="indicator-text" id="indicatorText">Prix équilibré</span>
+                        </div>
+                    </div>
+
+                    <div class="total-display">
+                        <span id="totalLabel">Total</span>
+                        <span class="total-amount" id="totalAmount">$300</span>
+                    </div>
+
+                    <div class="action-buttons">
+                        <button class="action-btn back-btn" id="backBtn">
+                            <i class="fas fa-arrow-left"></i>
+                            <span>Retour</span>
+                        </button>
+                        <button class="action-btn negotiate-btn" id="negotiateBtn">
+                            <i class="fas fa-handshake"></i>
+                            <span id="negotiateBtnText">Négocier</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="tablet-footer">
+                    <div class="warning-box">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <span id="warningText">Prix élevé = Plus de risque de refus ou de vol !</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
