@@ -1,6 +1,7 @@
 local spawnedPeds = {}
 local currentNegotiation = nil
 local busyPeds = {}
+local dealerPeds = {}
 
 -- Fonction pour obtenir la traduction
 local function L(key)
@@ -19,53 +20,113 @@ end
 -- Fonction pour créer un PNJ
 local function CreateDealerPed(location)
     local model = Config.PedModels[math.random(#Config.PedModels)]
-    lib.requestModel(model, 10000)
 
-    local ped = CreatePed(4, model, location.coords.x, location.coords.y, location.coords.z, location.coords.w, false, true)
+    -- Demander le modèle
+    RequestModel(model)
+    while not HasModelLoaded(model) do
+        Wait(10)
+    end
+
+    local ped = CreatePed(4, model, location.coords.x, location.coords.y, location.coords.z - 1.0, location.coords.w, false, true)
+
+    -- Attendre que le PNJ soit bien créé
+    local timeout = 0
+    while not DoesEntityExist(ped) and timeout < 100 do
+        Wait(10)
+        timeout = timeout + 1
+    end
+
+    if not DoesEntityExist(ped) then
+        if Config.Debug then
+            print('[DEBUG] Échec de création du PNJ dealer')
+        end
+        SetModelAsNoLongerNeeded(model)
+        return nil
+    end
+
     SetEntityAsMissionEntity(ped, true, true)
     SetPedFleeAttributes(ped, 0, 0)
     SetPedDiesWhenInjured(ped, false)
     SetPedKeepTask(ped, true)
     SetBlockingOfNonTemporaryEvents(ped, true)
+    SetPedRelationshipGroupHash(ped, GetHashKey("CIVMALE"))
+
+    -- Attendre un peu avant d'appliquer le scénario
+    Wait(100)
 
     -- Appliquer le scénario
     if location.scenario then
         TaskStartScenarioInPlace(ped, location.scenario, 0, true)
     end
 
-    -- Ajouter l'option ox_target
-    exports.ox_target:addLocalEntity(ped, {
-        {
-            name = 'sell_drugs',
-            icon = 'fas fa-cannabis',
-            label = L('target_sell_drugs'),
-            onSelect = function()
-                if busyPeds[ped] then
-                    Notify(L('ped_busy'), 'error')
-                    return
-                end
-                OpenDrugSelectionUI(ped)
-            end,
-            distance = Config.InteractionDistance
-        }
-    })
+    -- Marquer comme PNJ dealer
+    dealerPeds[ped] = true
 
+    -- Ajouter l'option ox_target après un court délai
+    SetTimeout(500, function()
+        if DoesEntityExist(ped) then
+            exports.ox_target:addLocalEntity(ped, {
+                {
+                    name = 'sell_drugs',
+                    icon = 'fas fa-cannabis',
+                    label = L('target_sell_drugs'),
+                    onSelect = function(data)
+                        if busyPeds[ped] then
+                            Notify(L('ped_busy'), 'error')
+                            return
+                        end
+                        OpenDrugSelectionUI(ped)
+                    end,
+                    distance = Config.InteractionDistance
+                }
+            }, {
+                distance = 3.0,
+                size = vec3(1.5, 1.5, 2.0)
+            })
+
+            if Config.Debug then
+                print(('[DEBUG] Target ajouté au PNJ dealer (ID: %d)'):format(ped))
+            end
+        end
+    end)
+
+    SetModelAsNoLongerNeeded(model)
     return ped
 end
 
 -- Fonction pour spawn tous les PNJ
 local function SpawnAllPeds()
-    for _, location in ipairs(Config.PedLocations) do
-        local ped = CreateDealerPed(location)
-        table.insert(spawnedPeds, {
-            ped = ped,
-            location = location
-        })
+    local spawnedCount = 0
+
+    for i, location in ipairs(Config.PedLocations) do
+        SetTimeout(i * 100, function() -- Délai de 100ms entre chaque spawn
+            local ped = CreateDealerPed(location)
+
+            if ped and DoesEntityExist(ped) then
+                table.insert(spawnedPeds, {
+                    ped = ped,
+                    location = location
+                })
+                spawnedCount = spawnedCount + 1
+
+                if Config.Debug then
+                    local coords = GetEntityCoords(ped)
+                    print(('[DEBUG] PNJ dealer #%d spawn à %.2f, %.2f, %.2f'):format(spawnedCount, coords.x, coords.y, coords.z))
+                end
+            else
+                if Config.Debug then
+                    print(('[DEBUG] Échec du spawn du PNJ dealer #%d'):format(i))
+                end
+            end
+        end)
     end
 
-    if Config.Debug then
-        print(('[DEBUG] %d PNJs de dealers ont été spawn'):format(#spawnedPeds))
-    end
+    -- Log final après tous les spawns
+    SetTimeout(#Config.PedLocations * 100 + 1000, function()
+        if Config.Debug then
+            print(('[DEBUG] Total: %d/%d PNJs de dealers ont été spawn avec succès'):format(spawnedCount, #Config.PedLocations))
+        end
+    end)
 end
 
 -- Fonction pour obtenir les drogues que le joueur possède
@@ -339,10 +400,21 @@ end)
 AddEventHandler('onResourceStop', function(resourceName)
     if GetCurrentResourceName() ~= resourceName then return end
 
+    -- Retirer tous les targets et supprimer les PNJ
     for _, spawnedPed in ipairs(spawnedPeds) do
         if DoesEntityExist(spawnedPed.ped) then
+            exports.ox_target:removeLocalEntity(spawnedPed.ped, 'sell_drugs')
             DeleteEntity(spawnedPed.ped)
         end
+    end
+
+    -- Vider les tables
+    spawnedPeds = {}
+    dealerPeds = {}
+    busyPeds = {}
+
+    if Config.Debug then
+        print('[DEBUG] Cleanup des PNJ dealers effectué')
     end
 end)
 
