@@ -1,7 +1,6 @@
-local spawnedPeds = {}
+local addedPeds = {}
 local currentNegotiation = nil
 local busyPeds = {}
-local dealerPeds = {}
 
 -- Fonction pour obtenir la traduction
 local function L(key)
@@ -17,117 +16,70 @@ local function Notify(message, type)
     })
 end
 
--- Fonction pour créer un PNJ
-local function CreateDealerPed(location)
-    local model = Config.PedModels[math.random(#Config.PedModels)]
-
-    -- Demander le modèle
-    RequestModel(model)
-    while not HasModelLoaded(model) do
-        Wait(10)
-    end
-
-    local ped = CreatePed(4, model, location.coords.x, location.coords.y, location.coords.z - 1.0, location.coords.w, false, true)
-
-    -- Attendre que le PNJ soit bien créé
-    local timeout = 0
-    while not DoesEntityExist(ped) and timeout < 100 do
-        Wait(10)
-        timeout = timeout + 1
-    end
-
-    if not DoesEntityExist(ped) then
-        if Config.Debug then
-            print('[DEBUG] Échec de création du PNJ dealer')
-        end
-        SetModelAsNoLongerNeeded(model)
-        return nil
-    end
-
-    SetEntityAsMissionEntity(ped, true, true)
-    SetPedFleeAttributes(ped, 0, 0)
-    SetPedDiesWhenInjured(ped, false)
-    SetPedKeepTask(ped, true)
-    SetBlockingOfNonTemporaryEvents(ped, true)
-    SetPedRelationshipGroupHash(ped, GetHashKey("CIVMALE"))
-
-    -- Attendre un peu avant d'appliquer le scénario
-    Wait(100)
-
-    -- Appliquer le scénario
-    if location.scenario then
-        TaskStartScenarioInPlace(ped, location.scenario, 0, true)
-    end
-
-    -- Marquer comme PNJ dealer
-    dealerPeds[ped] = true
-
-    -- Ajouter l'option ox_target après un court délai
-    SetTimeout(500, function()
-        if DoesEntityExist(ped) then
-            exports.ox_target:addLocalEntity(ped, {
-                {
-                    name = 'sell_drugs',
-                    icon = 'fas fa-cannabis',
-                    label = L('target_sell_drugs'),
-                    onSelect = function(data)
-                        if busyPeds[ped] then
-                            Notify(L('ped_busy'), 'error')
-                            return
-                        end
-                        OpenDrugSelectionUI(ped)
-                    end,
-                    distance = Config.InteractionDistance
-                }
-            }, {
-                distance = 3.0,
-                size = vec3(1.5, 1.5, 2.0)
-            })
-
-            if Config.Debug then
-                print(('[DEBUG] Target ajouté au PNJ dealer (ID: %d)'):format(ped))
-            end
-        end
-    end)
-
-    SetModelAsNoLongerNeeded(model)
-    return ped
+-- Validation du PNJ (comme dans le code de référence)
+function IsValidPed(ped)
+    if not DoesEntityExist(ped) or IsPedAPlayer(ped) then return false end
+    if IsPedDeadOrDying(ped, true) or IsPedInAnyVehicle(ped, false) then return false end
+    if IsPedSwimming(ped) or IsPedInCombat(ped, 0) or IsPedFleeing(ped) then return false end
+    if IsPedStill(ped) or IsPedUsingAnyScenario(ped) then return false end
+    if not IsPedHuman(ped) then return false end
+    return true
 end
 
--- Fonction pour spawn tous les PNJ
-local function SpawnAllPeds()
-    local spawnedCount = 0
+-- Animation de conversation pour le PNJ
+function PlayConversationAnimationForPNJ(ped)
+    RequestAnimDict("amb@world_human_stand_mobile@male@text@base")
+    RequestAnimDict("facials@gen_male@variations@normal")
+    while not HasAnimDictLoaded("amb@world_human_stand_mobile@male@text@base") or not HasAnimDictLoaded("facials@gen_male@variations@normal") do
+        Wait(100)
+    end
+    TaskPlayAnim(ped, "amb@world_human_stand_mobile@male@text@base", "base", 8.0, -8.0, -1, 1, 0, false, false, false)
+    TaskPlayAnim(ped, "facials@gen_male@variations@normal", "facmood_neutral_loop", 8.0, -8.0, -1, 1, 0, false, false, false)
+    FreezeEntityPosition(ped, true)
 
-    for i, location in ipairs(Config.PedLocations) do
-        SetTimeout(i * 100, function() -- Délai de 100ms entre chaque spawn
-            local ped = CreateDealerPed(location)
+    Citizen.SetTimeout(5000, function()
+        ClearPedTasks(ped)
+        FreezeEntityPosition(ped, false)
+    end)
+end
 
-            if ped and DoesEntityExist(ped) then
-                table.insert(spawnedPeds, {
-                    ped = ped,
-                    location = location
+-- Scanner tous les PNJ et ajouter le target (comme dans le code de référence)
+CreateThread(function()
+    while true do
+        Wait(5000)
+        local peds = GetGamePool('CPed')
+        for _, ped in pairs(peds) do
+            if not addedPeds[ped] and IsValidPed(ped) then
+                exports.ox_target:addLocalEntity(ped, {
+                    {
+                        name = 'sell_drugs',
+                        icon = 'fas fa-cannabis',
+                        label = L('target_sell_drugs'),
+                        distance = 2.5,
+                        onSelect = function(data)
+                            if busyPeds[ped] then
+                                Notify(L('ped_busy'), 'error')
+                                return
+                            end
+                            PlayConversationAnimationForPNJ(ped)
+                            OpenDrugSelectionUI(ped)
+                        end
+                    }
+                }, {
+                    distance = 3.0,
+                    bone = nil,
+                    size = vec3(1.5, 1.5, 2.0)
                 })
-                spawnedCount = spawnedCount + 1
+                addedPeds[ped] = true
 
                 if Config.Debug then
                     local coords = GetEntityCoords(ped)
-                    print(('[DEBUG] PNJ dealer #%d spawn à %.2f, %.2f, %.2f'):format(spawnedCount, coords.x, coords.y, coords.z))
-                end
-            else
-                if Config.Debug then
-                    print(('[DEBUG] Échec du spawn du PNJ dealer #%d'):format(i))
+                    print(('[DEBUG] Target ajouté au PNJ (ID: %d) à %.2f, %.2f, %.2f'):format(ped, coords.x, coords.y, coords.z))
                 end
             end
-        end)
-    end
-
-    -- Log final après tous les spawns
-    SetTimeout(#Config.PedLocations * 100 + 1000, function()
-        if Config.Debug then
-            print(('[DEBUG] Total: %d/%d PNJs de dealers ont été spawn avec succès'):format(spawnedCount, #Config.PedLocations))
         end
-    end)
-end
+    end
+end)
 
 -- Fonction pour obtenir les drogues que le joueur possède
 local function GetPlayerDrugs()
@@ -189,7 +141,9 @@ end
 local function StartNegotiation(selectedDrug, requestedPrice, quantity)
     if not currentNegotiation or not DoesEntityExist(currentNegotiation.ped) then
         Notify(L('too_far'), 'error')
-        busyPeds[currentNegotiation.ped] = nil
+        if currentNegotiation then
+            busyPeds[currentNegotiation.ped] = nil
+        end
         currentNegotiation = nil
         return
     end
@@ -306,14 +260,8 @@ local function StartNegotiation(selectedDrug, requestedPrice, quantity)
                 Notify(L('got_stolen'), 'error')
 
                 -- Le PNJ s'enfuit
+                ClearPedTasks(ped)
                 TaskSmartFleePed(ped, playerPed, 100.0, -1, false, false)
-
-                -- Supprimer le PNJ après un délai
-                SetTimeout(10000, function()
-                    if DoesEntityExist(ped) then
-                        DeleteEntity(ped)
-                    end
-                end)
 
             elseif result.action == 'callCops' then
                 -- Message d'appel de police
@@ -333,6 +281,7 @@ local function StartNegotiation(selectedDrug, requestedPrice, quantity)
                 -- TriggerServerEvent('police:alert', coords, 'Drug dealing')
 
                 -- Le PNJ appelle la police (animation téléphone)
+                ClearPedTasks(ped)
                 TaskStartScenarioInPlace(ped, "WORLD_HUMAN_MOBILE_FILM_SHOCKING", 0, true)
             end
         else
@@ -345,7 +294,7 @@ local function StartNegotiation(selectedDrug, requestedPrice, quantity)
         end)
 
         currentNegotiation = nil
-    end, selectedDrug, requestedPrice, quantity, NetworkGetNetworkIdFromEntity(ped))
+    end, selectedDrug, requestedPrice, quantity)
 end
 
 -- NUI Callbacks
@@ -373,52 +322,23 @@ RegisterNUICallback('startNegotiation', function(data, cb)
     cb('ok')
 end)
 
--- Event pour respawn un PNJ
-RegisterNetEvent('zsell:respawnPed', function(netId)
-    local ped = NetworkGetEntityFromNetworkId(netId)
-
-    if DoesEntityExist(ped) then
-        -- Trouver la location du PNJ
-        for i, spawnedPed in ipairs(spawnedPeds) do
-            if spawnedPed.ped == ped then
-                -- Supprimer le PNJ actuel
-                DeleteEntity(ped)
-
-                -- Respawn après le délai configuré
-                SetTimeout(Config.PedRespawnTime * 1000, function()
-                    local newPed = CreateDealerPed(spawnedPed.location)
-                    spawnedPeds[i].ped = newPed
-                end)
-
-                break
-            end
-        end
-    end
-end)
-
 -- Cleanup à la déconnexion
 AddEventHandler('onResourceStop', function(resourceName)
     if GetCurrentResourceName() ~= resourceName then return end
 
-    -- Retirer tous les targets et supprimer les PNJ
-    for _, spawnedPed in ipairs(spawnedPeds) do
-        if DoesEntityExist(spawnedPed.ped) then
-            exports.ox_target:removeLocalEntity(spawnedPed.ped, 'sell_drugs')
-            DeleteEntity(spawnedPed.ped)
-        end
-    end
-
     -- Vider les tables
-    spawnedPeds = {}
-    dealerPeds = {}
+    addedPeds = {}
     busyPeds = {}
+    currentNegotiation = nil
 
     if Config.Debug then
-        print('[DEBUG] Cleanup des PNJ dealers effectué')
+        print('[DEBUG] Cleanup effectué')
     end
 end)
 
--- Init
-CreateThread(function()
-    SpawnAllPeds()
-end)
+-- Message de démarrage
+if Config.Debug then
+    print('^2[Z-SELL]^7 Script de vente de drogue chargé')
+    print('^3[Z-SELL]^7 Scanner des PNJ actif (check toutes les 5 secondes)')
+    print('^3[Z-SELL]^7 Approchez-vous de n\'importe quel PNJ pour vendre')
+end
