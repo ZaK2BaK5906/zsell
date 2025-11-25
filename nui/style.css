@@ -38,8 +38,8 @@ body {
 }
 
 .tablet {
-    width: 950px;
-    height: 650px;
+    width: 900px;
+    height: 550px;
     background: linear-gradient(135deg, rgba(20, 20, 30, 0.98), rgba(30, 30, 45, 0.98));
     border-radius: 20px;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8), 0 0 0 3px rgba(255, 255, 255, 0.1);
@@ -115,7 +115,7 @@ body {
 }
 
 .tablet-body {
-    padding: 25px;
+    padding: 15px 20px;
     flex: 1;
     overflow-y: auto;
     overflow-x: hidden;
@@ -123,34 +123,34 @@ body {
 
 .location-info {
     text-align: center;
-    margin-bottom: 30px;
+    margin-bottom: 15px;
 }
 
 .location-info h2 {
-    font-size: 32px;
+    font-size: 26px;
     color: #fff;
-    margin-bottom: 10px;
+    margin-bottom: 5px;
     text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
 }
 
 .location-subtitle {
-    font-size: 16px;
+    font-size: 13px;
     color: rgba(255, 255, 255, 0.7);
     text-transform: uppercase;
-    letter-spacing: 2px;
+    letter-spacing: 1px;
 }
 
 .drug-options {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
-    margin-bottom: 20px;
+    gap: 15px;
+    margin-bottom: 15px;
 }
 
 .drug-card {
     background: rgba(255, 255, 255, 0.05);
-    border-radius: 15px;
-    padding: 25px;
+    border-radius: 12px;
+    padding: 15px;
     border: 2px solid rgba(255, 255, 255, 0.1);
     transition: all 0.3s ease;
     position: relative;
@@ -185,13 +185,13 @@ body {
 }
 
 .drug-icon {
-    width: 70px;
-    height: 70px;
-    border-radius: 15px;
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin: 0 auto 20px;
+    margin: 0 auto 10px;
     background: linear-gradient(135deg, #667eea, #764ba2);
     box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
     position: relative;
@@ -214,7 +214,7 @@ body {
 }
 
 .drug-icon i {
-    font-size: 32px;
+    font-size: 24px;
     color: #fff;
     transition: transform 0.5s ease;
 }
@@ -230,16 +230,16 @@ body {
 }
 
 .drug-content h3 {
-    font-size: 20px;
+    font-size: 16px;
     color: #fff;
-    margin-bottom: 10px;
+    margin-bottom: 8px;
 }
 
 .drug-info {
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    margin-bottom: 20px;
+    gap: 5px;
+    margin-bottom: 12px;
 }
 
 .info-row {
@@ -296,19 +296,19 @@ body {
 
 .selected-drug-info {
     background: rgba(255, 255, 255, 0.05);
-    border-radius: 15px;
-    padding: 20px;
+    border-radius: 12px;
+    padding: 12px;
     display: flex;
     align-items: center;
-    gap: 20px;
-    margin-bottom: 25px;
+    gap: 15px;
+    margin-bottom: 15px;
     border: 2px solid rgba(255, 255, 255, 0.1);
 }
 
 .drug-icon-large {
-    width: 80px;
-    height: 80px;
-    border-radius: 15px;
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -317,31 +317,31 @@ body {
 }
 
 .drug-icon-large i {
-    font-size: 40px;
+    font-size: 30px;
     color: #fff;
 }
 
 .drug-details h3 {
-    font-size: 24px;
+    font-size: 20px;
     color: #fff;
-    margin-bottom: 8px;
+    margin-bottom: 5px;
 }
 
 .drug-details p {
-    font-size: 14px;
+    font-size: 13px;
     color: rgba(255, 255, 255, 0.7);
 }
 
 .price-range {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 25px;
+    margin-bottom: 15px;
 }
 
 .range-info {
     background: rgba(255, 255, 255, 0.05);
-    padding: 15px 25px;
-    border-radius: 10px;
+    padding: 10px 15px;
+    border-radius: 8px;
     flex: 1;
     margin: 0 5px;
     text-align: center;
@@ -350,41 +350,41 @@ body {
 
 .range-label {
     display: block;
-    font-size: 12px;
+    font-size: 11px;
     color: rgba(255, 255, 255, 0.6);
     text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-bottom: 5px;
+    letter-spacing: 0.5px;
+    margin-bottom: 3px;
 }
 
 .range-value {
     display: block;
-    font-size: 20px;
+    font-size: 16px;
     color: #667eea;
     font-weight: 700;
 }
 
 .input-group {
-    margin-bottom: 20px;
+    margin-bottom: 12px;
 }
 
 .input-group label {
     display: block;
-    font-size: 14px;
+    font-size: 12px;
     color: rgba(255, 255, 255, 0.8);
-    margin-bottom: 10px;
+    margin-bottom: 6px;
     text-transform: uppercase;
-    letter-spacing: 1px;
+    letter-spacing: 0.5px;
 }
 
 .input-group input {
     width: 100%;
-    padding: 15px;
+    padding: 10px;
     background: rgba(255, 255, 255, 0.05);
     border: 2px solid rgba(255, 255, 255, 0.1);
-    border-radius: 10px;
+    border-radius: 8px;
     color: #fff;
-    font-size: 18px;
+    font-size: 16px;
     font-weight: 600;
     transition: all 0.3s ease;
 }
@@ -424,24 +424,24 @@ body {
 
 .total-display {
     background: linear-gradient(135deg, rgba(102, 126, 234, 0.2), rgba(118, 75, 162, 0.2));
-    padding: 20px;
-    border-radius: 10px;
+    padding: 12px 15px;
+    border-radius: 8px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 25px;
+    margin-bottom: 15px;
     border: 2px solid rgba(102, 126, 234, 0.3);
 }
 
 .total-display span:first-child {
-    font-size: 16px;
+    font-size: 14px;
     color: rgba(255, 255, 255, 0.8);
     text-transform: uppercase;
-    letter-spacing: 1px;
+    letter-spacing: 0.5px;
 }
 
 .total-amount {
-    font-size: 32px;
+    font-size: 24px;
     color: #fff;
     font-weight: 700;
 }
@@ -453,20 +453,20 @@ body {
 }
 
 .action-btn {
-    padding: 15px;
+    padding: 12px;
     border: none;
-    border-radius: 10px;
+    border-radius: 8px;
     color: #fff;
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 10px;
+    gap: 8px;
     text-transform: uppercase;
-    letter-spacing: 1px;
+    letter-spacing: 0.5px;
 }
 
 .back-btn {
@@ -489,19 +489,19 @@ body {
 }
 
 .tablet-footer {
-    margin-top: 20px;
+    margin-top: 10px;
 }
 
 .warning-box {
     background: rgba(255, 152, 0, 0.2);
     border: 2px solid rgba(255, 152, 0, 0.5);
-    border-radius: 10px;
-    padding: 15px 20px;
+    border-radius: 8px;
+    padding: 10px 15px;
     display: flex;
     align-items: center;
-    gap: 15px;
+    gap: 10px;
     color: #ff9800;
-    font-size: 14px;
+    font-size: 12px;
     animation: pulse 2s infinite;
 }
 
@@ -515,7 +515,7 @@ body {
 }
 
 .warning-box i {
-    font-size: 24px;
+    font-size: 18px;
 }
 
 /* Animations */

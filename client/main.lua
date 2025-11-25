@@ -35,12 +35,19 @@ function PlayConversationAnimationForPNJ(ped)
     end
     TaskPlayAnim(ped, "amb@world_human_stand_mobile@male@text@base", "base", 8.0, -8.0, -1, 1, 0, false, false, false)
     TaskPlayAnim(ped, "facials@gen_male@variations@normal", "facmood_neutral_loop", 8.0, -8.0, -1, 1, 0, false, false, false)
-    FreezeEntityPosition(ped, true)
 
-    Citizen.SetTimeout(5000, function()
+    -- Freezer le PNJ pour toute la durée de l'interaction
+    FreezeEntityPosition(ped, true)
+    SetBlockingOfNonTemporaryEvents(ped, true)
+end
+
+-- Fonction pour libérer le PNJ
+function ReleasePed(ped)
+    if DoesEntityExist(ped) then
         ClearPedTasks(ped)
         FreezeEntityPosition(ped, false)
-    end)
+        SetBlockingOfNonTemporaryEvents(ped, false)
+    end
 end
 
 -- Scanner tous les PNJ et ajouter le target (comme dans le code de référence)
@@ -288,9 +295,10 @@ local function StartNegotiation(selectedDrug, requestedPrice, quantity)
             Notify(result.message or 'Erreur', 'error')
         end
 
-        -- Libérer le PNJ
+        -- Libérer le PNJ après 5 secondes
         SetTimeout(5000, function()
             busyPeds[ped] = nil
+            ReleasePed(ped)
         end)
 
         currentNegotiation = nil
@@ -304,6 +312,7 @@ RegisterNUICallback('closeUI', function(data, cb)
     -- Libérer le PNJ si la négociation n'a pas commencé
     if currentNegotiation and not currentNegotiation.started then
         busyPeds[currentNegotiation.ped] = nil
+        ReleasePed(currentNegotiation.ped)
         currentNegotiation = nil
     end
 
