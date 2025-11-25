@@ -1,6 +1,7 @@
 local addedPeds = {}
 local currentNegotiation = nil
 local busyPeds = {}
+local pedCooldowns = {} -- Track des PNJ en cooldown avec timestamp
 
 -- Fonction pour obtenir la traduction
 local function L(key)
@@ -14,6 +15,39 @@ local function Notify(message, type)
         description = message,
         type = type or 'info'
     })
+end
+
+-- Fonction pour vérifier si un PNJ est en cooldown
+local function IsPedOnCooldown(ped)
+    if pedCooldowns[ped] then
+        local timeLeft = pedCooldowns[ped] - GetGameTimer()
+        if timeLeft > 0 then
+            -- Calculer le temps restant en minutes et secondes
+            local minutes = math.floor(timeLeft / 60000)
+            local seconds = math.floor((timeLeft % 60000) / 1000)
+
+            if Config.Debug then
+                print(('[DEBUG] PNJ en cooldown: %dm %ds restantes'):format(minutes, seconds))
+            end
+
+            Notify(('Ce client a besoin de temps. Revenez dans %dm %ds'):format(minutes, seconds), 'error')
+            return true
+        else
+            -- Cooldown expiré, retirer du tableau
+            pedCooldowns[ped] = nil
+            return false
+        end
+    end
+    return false
+end
+
+-- Fonction pour mettre un PNJ en cooldown
+local function SetPedCooldown(ped)
+    pedCooldowns[ped] = GetGameTimer() + (Config.PedCooldown * 1000)
+
+    if Config.Debug then
+        print(('[DEBUG] PNJ mis en cooldown pour %d secondes'):format(Config.PedCooldown))
+    end
 end
 
 -- Validation du PNJ (comme dans le code de référence)
@@ -68,6 +102,12 @@ CreateThread(function()
                                 Notify(L('ped_busy'), 'error')
                                 return
                             end
+
+                            -- Vérifier si le PNJ est en cooldown
+                            if IsPedOnCooldown(ped) then
+                                return
+                            end
+
                             PlayConversationAnimationForPNJ(ped)
                             OpenDrugSelectionUI(ped)
                         end
@@ -224,9 +264,10 @@ local function StartNegotiation(selectedDrug, requestedPrice, quantity)
 
                 Notify(L('sale_success'):format(result.finalPrice * result.quantity), 'success')
 
-                -- Libérer le PNJ immédiatement après la vente
+                -- Libérer le PNJ et mettre en cooldown
                 ReleasePed(ped)
                 busyPeds[ped] = nil
+                SetPedCooldown(ped)
 
             elseif result.action == 'refuse' then
                 -- Message de refus
@@ -242,14 +283,16 @@ local function StartNegotiation(selectedDrug, requestedPrice, quantity)
 
                 Notify(L('sale_refused'), 'error')
 
-                -- Libérer le PNJ immédiatement
+                -- Libérer le PNJ et mettre en cooldown
                 ReleasePed(ped)
                 busyPeds[ped] = nil
+                SetPedCooldown(ped)
 
             elseif result.action == 'steal' then
                 -- IMPORTANT: Libérer le PNJ AVANT qu'il vole pour qu'il puisse courir
                 ReleasePed(ped)
                 busyPeds[ped] = nil
+                SetPedCooldown(ped)
 
                 -- Animation de vol
                 local dict = Config.Animations.steal.dict
@@ -286,6 +329,7 @@ local function StartNegotiation(selectedDrug, requestedPrice, quantity)
                 -- IMPORTANT: Libérer le PNJ AVANT qu'il appelle pour qu'il puisse bouger
                 ReleasePed(ped)
                 busyPeds[ped] = nil
+                SetPedCooldown(ped)
 
                 -- Message d'appel de police
                 local copMsgs = Config.NPCDialogues.callCops
@@ -350,6 +394,7 @@ AddEventHandler('onResourceStop', function(resourceName)
     -- Vider les tables
     addedPeds = {}
     busyPeds = {}
+    pedCooldowns = {}
     currentNegotiation = nil
 
     if Config.Debug then

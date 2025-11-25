@@ -9,6 +9,9 @@ Config.Debug = true
 -- Distance d'interaction avec les PNJ
 Config.InteractionDistance = 2.5
 
+-- Cooldown entre deux ventes au même PNJ (en secondes)
+Config.PedCooldown = 300 -- 5 minutes
+
 -- Configuration des drogues vendables
 Config.Drugs = {
     {

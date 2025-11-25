@@ -1,3 +1,5 @@
+Locales = Locales or {}
+
 Locales['de'] = {
     -- Target
     ['target_sell_drugs'] = 'Drogen verkaufen',
