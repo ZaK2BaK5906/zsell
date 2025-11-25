@@ -224,6 +224,10 @@ local function StartNegotiation(selectedDrug, requestedPrice, quantity)
 
                 Notify(L('sale_success'):format(result.finalPrice * result.quantity), 'success')
 
+                -- Libérer le PNJ immédiatement après la vente
+                ReleasePed(ped)
+                busyPeds[ped] = nil
+
             elseif result.action == 'refuse' then
                 -- Message de refus
                 local refuseMsgs = Config.NPCDialogues.refuse
@@ -238,7 +242,15 @@ local function StartNegotiation(selectedDrug, requestedPrice, quantity)
 
                 Notify(L('sale_refused'), 'error')
 
+                -- Libérer le PNJ immédiatement
+                ReleasePed(ped)
+                busyPeds[ped] = nil
+
             elseif result.action == 'steal' then
+                -- IMPORTANT: Libérer le PNJ AVANT qu'il vole pour qu'il puisse courir
+                ReleasePed(ped)
+                busyPeds[ped] = nil
+
                 -- Animation de vol
                 local dict = Config.Animations.steal.dict
                 local anim = Config.Animations.steal.anim
@@ -271,6 +283,10 @@ local function StartNegotiation(selectedDrug, requestedPrice, quantity)
                 TaskSmartFleePed(ped, playerPed, 100.0, -1, false, false)
 
             elseif result.action == 'callCops' then
+                -- IMPORTANT: Libérer le PNJ AVANT qu'il appelle pour qu'il puisse bouger
+                ReleasePed(ped)
+                busyPeds[ped] = nil
+
                 -- Message d'appel de police
                 local copMsgs = Config.NPCDialogues.callCops
                 local copMsg = L(copMsgs[math.random(#copMsgs)])
@@ -288,18 +304,14 @@ local function StartNegotiation(selectedDrug, requestedPrice, quantity)
                 -- TriggerServerEvent('police:alert', coords, 'Drug dealing')
 
                 -- Le PNJ appelle la police (animation téléphone)
-                ClearPedTasks(ped)
                 TaskStartScenarioInPlace(ped, "WORLD_HUMAN_MOBILE_FILM_SHOCKING", 0, true)
             end
         else
             Notify(result.message or 'Erreur', 'error')
-        end
-
-        -- Libérer le PNJ après 5 secondes
-        SetTimeout(5000, function()
-            busyPeds[ped] = nil
+            -- Libérer le PNJ en cas d'erreur
             ReleasePed(ped)
-        end)
+            busyPeds[ped] = nil
+        end
 
         currentNegotiation = nil
     end, selectedDrug, requestedPrice, quantity)
