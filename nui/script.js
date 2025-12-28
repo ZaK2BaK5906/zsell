@@ -73,12 +73,8 @@ $(document).ready(function() {
                                 <span>${drug.count} pochons</span>
                             </div>
                             <div class="info-row">
-                                <span class="info-label">Prix min:</span>
-                                <span>$${drug.minPrice}</span>
-                            </div>
-                            <div class="info-row">
-                                <span class="info-label">Prix max:</span>
-                                <span>$${drug.maxPrice}</span>
+                                <span class="info-label">Prix suggéré:</span>
+                                <span style="color: #ffc107; font-weight: 600;">$${Math.floor((drug.minPrice + drug.maxPrice) / 2)}</span>
                             </div>
                         </div>
                         <button class="select-drug-btn">
@@ -115,13 +111,14 @@ $(document).ready(function() {
         // Mettre à jour les informations
         $('#selectedDrugName').text(selectedDrug.label);
         $('#selectedDrugStock span').text(selectedDrug.count);
-        $('#minPrice').text('$' + selectedDrug.minPrice);
-        $('#maxPrice').text('$' + selectedDrug.maxPrice);
 
-        // Configurer les inputs
-        const defaultPrice = Math.floor((selectedDrug.minPrice + selectedDrug.maxPrice) / 2);
+        // Afficher le prix suggéré (moyenne)
+        const suggestedPrice = Math.floor((selectedDrug.minPrice + selectedDrug.maxPrice) / 2);
+        $('#suggestedPrice').text('$' + suggestedPrice);
+
+        // Configurer les inputs (pas de limite max sur le prix pour permettre des prix abusifs)
         $('#quantityInput').attr('max', selectedDrug.count).val(1);
-        $('#priceInput').attr('min', selectedDrug.minPrice).attr('max', selectedDrug.maxPrice).val(defaultPrice);
+        $('#priceInput').attr('min', 0).removeAttr('max').val(suggestedPrice);
 
         // Mettre à jour l'icône
         let icon = 'fa-pills';
@@ -157,27 +154,35 @@ $(document).ready(function() {
     // Fonction pour mettre à jour l'indicateur de prix
     function updatePriceIndicator() {
         const price = parseInt($('#priceInput').val()) || 0;
-        const min = selectedDrug.minPrice;
+        const suggested = Math.floor((selectedDrug.minPrice + selectedDrug.maxPrice) / 2);
         const max = selectedDrug.maxPrice;
 
-        const percentage = ((price - min) / (max - min)) * 100;
+        // Calculer le pourcentage par rapport au prix suggéré pour la barre
+        let percentage = Math.min(((price / suggested) * 50), 100);
         $('#priceIndicator').css('width', percentage + '%');
 
         let text = '';
         let color = '';
 
-        if (percentage <= 40) {
-            text = 'Prix très bas - Très forte chance de vente';
+        // Messages escaladés en fonction du prix
+        if (price < suggested * 0.5) {
+            text = '💰 Prix très bas - Vente facile mais peu rentable';
             color = '#11998e';
-        } else if (percentage <= 60) {
-            text = 'Prix équilibré - Bonne chance de vente';
-            color = '#f5af19';
-        } else if (percentage <= 80) {
-            text = 'Prix élevé - Risque de refus';
+        } else if (price <= suggested) {
+            text = '✅ Prix raisonnable - Bonnes chances de vente';
+            color = '#4caf50';
+        } else if (price <= max) {
+            text = '⚠️ Prix élevé - Risque de refus';
             color = '#ff9800';
-        } else {
-            text = 'Prix très élevé - Fort risque de refus ou vol !';
+        } else if (price <= max * 1.5) {
+            text = '⚠️ Prix très élevé - Risque de vol !';
+            color = '#ff5722';
+        } else if (price <= max * 2) {
+            text = '🚨 DANGER - Tu vas te faire défoncer !';
             color = '#ee0979';
+        } else {
+            text = '💀 T\'ES FOU ?! Prépare-toi à manger une claque !';
+            color = '#d32f2f';
         }
 
         $('#indicatorText').text(text).css('color', color);
@@ -201,12 +206,12 @@ $(document).ready(function() {
         const quantity = parseInt($('#quantityInput').val()) || 1;
         const price = parseInt($('#priceInput').val()) || 0;
 
-        // Valider
+        // Valider uniquement la quantité (pas de limite sur le prix)
         if (quantity < 1 || quantity > selectedDrug.count) {
             return;
         }
 
-        if (price < selectedDrug.minPrice || price > selectedDrug.maxPrice) {
+        if (price <= 0) {
             return;
         }
 

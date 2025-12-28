@@ -28,6 +28,8 @@ Locales['fr'] = {
     ['cops_called'] = 'Le client a appelé les flics ! Fuyez !',
     ['ped_busy'] = 'Cette personne est déjà occupée',
     ['too_far'] = 'Vous êtes trop loin du client',
+    ['outside_zone'] = 'Cette zone n\'est pas sûre pour vendre',
+    ['npc_outside_zone'] = 'Dégage de là ! C\'est pas le bon endroit pour ça !',
 
     -- NPC Dialogues
     ['npc_greeting_1'] = 'Yo, t\'as de la bonne ?',

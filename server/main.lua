@@ -78,11 +78,24 @@ lib.callback.register('zsell:processSale', function(source, drugItem, requestedP
         }
     end
 
-    -- Vérifier que le prix est dans la fourchette
-    if requestedPrice < drugConfig.minPrice or requestedPrice > drugConfig.maxPrice then
+    -- Vérifier si le prix est abusif (> max * 2) -> le PNJ te met une claque et vole TOUT
+    if requestedPrice > (drugConfig.maxPrice * 2) then
+        if Config.Debug then
+            print(('[DEBUG] Prix abusif détecté: %s$ (max: %s$) -> Vol automatique de TOUT'):format(requestedPrice, drugConfig.maxPrice))
+        end
+
+        -- Voler TOUTE la quantité demandée
+        if count >= quantity then
+            exports.ox_inventory:RemoveItem(src, drugItem, quantity)
+        else
+            exports.ox_inventory:RemoveItem(src, drugItem, count)
+        end
+
         return {
-            success = false,
-            message = 'Prix invalide'
+            success = true,
+            action = 'steal',
+            stolenQuantity = math.min(quantity, count),
+            abusivePrice = true
         }
     end
 

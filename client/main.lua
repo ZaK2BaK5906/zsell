@@ -50,6 +50,28 @@ local function SetPedCooldown(ped)
     end
 end
 
+-- Fonction pour vérifier si le joueur est dans une zone de vente autorisée
+local function IsPlayerInSalesZone()
+    local playerPed = PlayerPedId()
+    local playerCoords = GetEntityCoords(playerPed)
+
+    for _, zone in ipairs(Config.SalesZones) do
+        local distance = #(playerCoords - zone.coords)
+        if distance <= zone.radius then
+            if Config.Debug then
+                print(('[DEBUG] Joueur dans la zone de vente: %s (distance: %.2fm)'):format(zone.name, distance))
+            end
+            return true, zone.name
+        end
+    end
+
+    if Config.Debug then
+        print('[DEBUG] Joueur hors de toutes les zones de vente')
+    end
+
+    return false, nil
+end
+
 -- Validation du PNJ (comme dans le code de référence)
 function IsValidPed(ped)
     if not DoesEntityExist(ped) or IsPedAPlayer(ped) then return false end
@@ -105,6 +127,25 @@ CreateThread(function()
 
                             -- Vérifier si le PNJ est en cooldown
                             if IsPedOnCooldown(ped) then
+                                return
+                            end
+
+                            -- Vérifier si le joueur est dans une zone de vente autorisée
+                            local inZone, zoneName = IsPlayerInSalesZone()
+                            if not inZone then
+                                -- Le PNJ refuse immédiatement car pas dans une zone de vente
+                                local playerPed = PlayerPedId()
+                                TaskTurnPedToFaceEntity(ped, playerPed, 1000)
+                                Wait(500)
+
+                                lib.notify({
+                                    title = 'Client',
+                                    description = L('npc_outside_zone'),
+                                    type = 'error',
+                                    duration = 4000
+                                })
+
+                                Notify(L('outside_zone'), 'error')
                                 return
                             end
 

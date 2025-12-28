@@ -12,6 +12,25 @@ Config.InteractionDistance = 2.5
 -- Cooldown entre deux ventes au même PNJ (en secondes)
 Config.PedCooldown = 300 -- 5 minutes
 
+-- Zones de vente autorisées (hors de ces zones, les PNJ refusent automatiquement)
+Config.SalesZones = {
+    {
+        name = 'Vespucci',
+        coords = vector3(-1184.07, -1510.02, 4.38), -- Vespucci Beach
+        radius = 500.0
+    },
+    {
+        name = 'Mirror Park',
+        coords = vector3(1201.85, -694.54, 60.51), -- Mirror Park
+        radius = 400.0
+    },
+    {
+        name = 'Vinewood',
+        coords = vector3(374.36, 423.48, 145.68), -- Vinewood
+        radius = 450.0
+    }
+}
+
 -- Configuration des drogues vendables
 Config.Drugs = {
     {

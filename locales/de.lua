@@ -28,6 +28,8 @@ Locales['de'] = {
     ['cops_called'] = 'Der Kunde hat die Polizei gerufen! Fliehen Sie!',
     ['ped_busy'] = 'Diese Person ist bereits beschäftigt',
     ['too_far'] = 'Sie sind zu weit vom Kunden entfernt',
+    ['outside_zone'] = 'Diese Zone ist nicht sicher zum Verkaufen',
+    ['npc_outside_zone'] = 'Verschwinde hier! Das ist nicht der richtige Ort dafür!',
 
     -- NPC Dialogues
     ['npc_greeting_1'] = 'Yo, hast du was Gutes?',
