@@ -1,4 +1,5 @@
 -- Système de dispatch pour la police
+ESX = exports['es_extended']:getSharedObject()
 
 -- Fonction pour obtenir tous les joueurs avec le job police
 local function GetPoliceOfficers()

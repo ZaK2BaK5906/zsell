@@ -1,4 +1,6 @@
 -- Système de notification pour la police
+ESX = exports['es_extended']:getSharedObject()
+
 local policeAlertActive = false
 local currentBlip = nil
 local currentRoute = nil
