@@ -6,6 +6,7 @@ local currentRoute = nil
 -- Fonction pour vérifier si le joueur est policier
 local function IsPlayerPolice()
     -- IMPORTANT: Adaptez cette fonction selon votre framework
+
     -- ESX:
     -- local PlayerData = ESX.GetPlayerData()
     -- return PlayerData.job and PlayerData.job.name == 'police'
@@ -18,12 +19,8 @@ local function IsPlayerPolice()
     -- local player = Ox.GetPlayer()
     -- return player.getGroup() == 'police'
 
-    -- Pour test (retourne toujours true)
-    if Config.Debug then
-        return true
-    end
-
-    return false -- Changez ça selon votre framework
+    -- Par défaut, retourne false (vous devez activer votre framework ci-dessus)
+    return false
 end
 
 -- Fonction pour obtenir le nom de la rue
@@ -139,16 +136,6 @@ RegisterNetEvent('zsell:policeAlert', function(data)
         type = 'showPoliceAlert',
         location = location,
         time = 'Il y a quelques instants'
-    })
-
-    -- Notification ox_lib
-    print('^3[Z-SELL POLICE]^7 Notification ox_lib envoyée')
-    lib.notify({
-        title = '🚨 APPEL D\'URGENCE',
-        description = 'Vente de drogue signalée à ' .. location,
-        type = 'error',
-        duration = 5000,
-        position = 'top'
     })
 
     -- CRÉER DIRECTEMENT LE GPS + BLIP (pas besoin d'accepter)

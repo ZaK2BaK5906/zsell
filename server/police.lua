@@ -36,14 +36,7 @@ local function GetPoliceOfficers()
     end
     ]]
 
-    -- Pour test (envoyer à tous les joueurs en mode debug)
-    if Config.Debug then
-        local allPlayers = GetPlayers()
-        for _, playerId in pairs(allPlayers) do
-            table.insert(officers, tonumber(playerId))
-        end
-    end
-
+    -- Par défaut, retourne une table vide (vous devez activer votre framework ci-dessus)
     return officers
 end
 
