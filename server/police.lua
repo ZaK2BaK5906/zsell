@@ -4,39 +4,12 @@
 local function GetPoliceOfficers()
     local officers = {}
 
-    -- IMPORTANT: Adaptez selon votre framework
-
-    -- ESX:
-    --[[
+    -- ESX activé
     local xPlayers = ESX.GetExtendedPlayers('job', 'police')
     for _, xPlayer in pairs(xPlayers) do
         table.insert(officers, xPlayer.source)
     end
-    ]]
 
-    -- QBCore:
-    --[[
-    local Players = QBCore.Functions.GetPlayers()
-    for _, playerId in pairs(Players) do
-        local Player = QBCore.Functions.GetPlayer(playerId)
-        if Player and Player.PlayerData.job.name == 'police' then
-            table.insert(officers, playerId)
-        end
-    end
-    ]]
-
-    -- OX_CORE:
-    --[[
-    local players = Ox.GetPlayers()
-    for _, playerId in pairs(players) do
-        local player = Ox.GetPlayer(playerId)
-        if player and player.getGroup() == 'police' then
-            table.insert(officers, playerId)
-        end
-    end
-    ]]
-
-    -- Par défaut, retourne une table vide (vous devez activer votre framework ci-dessus)
     return officers
 end
 

@@ -5,22 +5,9 @@ local currentRoute = nil
 
 -- Fonction pour vérifier si le joueur est policier
 local function IsPlayerPolice()
-    -- IMPORTANT: Adaptez cette fonction selon votre framework
-
-    -- ESX:
-    -- local PlayerData = ESX.GetPlayerData()
-    -- return PlayerData.job and PlayerData.job.name == 'police'
-
-    -- QBCore:
-    -- local PlayerData = QBCore.Functions.GetPlayerData()
-    -- return PlayerData.job and PlayerData.job.name == 'police'
-
-    -- OX_CORE:
-    -- local player = Ox.GetPlayer()
-    -- return player.getGroup() == 'police'
-
-    -- Par défaut, retourne false (vous devez activer votre framework ci-dessus)
-    return false
+    -- ESX activé
+    local PlayerData = ESX.GetPlayerData()
+    return PlayerData.job and PlayerData.job.name == 'police'
 end
 
 -- Fonction pour obtenir le nom de la rue
