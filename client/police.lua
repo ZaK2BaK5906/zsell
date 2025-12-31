@@ -100,28 +100,20 @@ end
 
 -- Event pour recevoir une alerte de police
 RegisterNetEvent('zsell:policeAlert', function(data)
-    if Config.Debug then
-        print('^3[Z-SELL POLICE]^7 Event reçu: zsell:policeAlert')
-        print('^3[Z-SELL POLICE]^7 Coordonnées:', data.coords)
-    end
+    print('^3[Z-SELL POLICE]^7 Event reçu: zsell:policeAlert')
+    print('^3[Z-SELL POLICE]^7 Coordonnées:', data.coords)
 
     -- Vérifier si le joueur est policier
     local isPolice = IsPlayerPolice()
-    if Config.Debug then
-        print('^3[Z-SELL POLICE]^7 IsPlayerPolice() =', isPolice)
-    end
+    print('^3[Z-SELL POLICE]^7 IsPlayerPolice() =', isPolice)
 
     if not isPolice then
-        if Config.Debug then
-            print('^1[Z-SELL POLICE]^7 Joueur n\'est pas policier, alerte ignorée')
-        end
+        print('^1[Z-SELL POLICE]^7 Joueur n\'est pas policier, alerte ignorée')
         return
     end
 
     if policeAlertActive then
-        if Config.Debug then
-            print('^1[Z-SELL POLICE]^7 Une alerte est déjà active, ignorée')
-        end
+        print('^1[Z-SELL POLICE]^7 Une alerte est déjà active, ignorée')
         return
     end
 
@@ -132,34 +124,25 @@ RegisterNetEvent('zsell:policeAlert', function(data)
     local zoneName = GetZoneName(data.coords)
     local location = streetName .. ", " .. zoneName
 
-    if Config.Debug then
-        print('^2[Z-SELL POLICE]^7 ✅ Alerte de police reçue:', location)
-    end
+    print('^2[Z-SELL POLICE]^7 ✅ Alerte de police reçue:', location)
 
     -- Jouer le son d'alerte
-    if Config.Debug then
-        print('^3[Z-SELL POLICE]^7 Envoi NUI: playSound')
-    end
+    print('^3[Z-SELL POLICE]^7 Envoi NUI: playSound')
     SendNUIMessage({
         type = 'playSound',
         sound = 'police_alert'
     })
 
     -- Afficher la notification UI
-    if Config.Debug then
-        print('^3[Z-SELL POLICE]^7 Envoi NUI: showPoliceAlert')
-    end
+    print('^3[Z-SELL POLICE]^7 Envoi NUI: showPoliceAlert')
     SendNUIMessage({
         type = 'showPoliceAlert',
         location = location,
-        time = 'Il y a quelques instants',
-        coords = data.coords
+        time = 'Il y a quelques instants'
     })
 
-    -- Notification ox_lib en backup
-    if Config.Debug then
-        print('^3[Z-SELL POLICE]^7 Notification ox_lib envoyée')
-    end
+    -- Notification ox_lib
+    print('^3[Z-SELL POLICE]^7 Notification ox_lib envoyée')
     lib.notify({
         title = '🚨 APPEL D\'URGENCE',
         description = 'Vente de drogue signalée à ' .. location,
@@ -167,47 +150,19 @@ RegisterNetEvent('zsell:policeAlert', function(data)
         duration = 5000,
         position = 'top'
     })
-end)
 
--- NUI Callback pour accepter l'alerte
-RegisterNUICallback('acceptPoliceAlert', function(data, cb)
-    if Config.Debug then
-        print('[DEBUG] Alerte acceptée par le policier')
-    end
-
-    -- Créer le blip et la route GPS
-    local radiusBlip = CreatePoliceBlip(data.coords)
+    -- CRÉER DIRECTEMENT LE GPS + BLIP (pas besoin d'accepter)
+    print('^2[Z-SELL POLICE]^7 Création GPS + Blip automatique')
+    CreatePoliceBlip(data.coords)
     SetGPSRoute(data.coords)
 
-    -- Notification de confirmation
-    lib.notify({
-        title = '✅ Intervention acceptée',
-        description = 'Route GPS activée vers la position',
-        type = 'success',
-        duration = 3000
-    })
-
-    policeAlertActive = false
-    cb('ok')
+    -- Auto-reset après 5 secondes
+    SetTimeout(5000, function()
+        policeAlertActive = false
+    end)
 end)
 
--- NUI Callback pour refuser l'alerte
-RegisterNUICallback('declinePoliceAlert', function(data, cb)
-    if Config.Debug then
-        print('[DEBUG] Alerte refusée par le policier')
-    end
-
-    -- Notification de refus
-    lib.notify({
-        title = 'ℹ️ Intervention refusée',
-        description = 'L\'alerte a été ignorée',
-        type = 'inform',
-        duration = 2000
-    })
-
-    policeAlertActive = false
-    cb('ok')
-end)
+-- Callbacks NUI supprimés (GPS créé automatiquement maintenant)
 
 -- Cleanup à l'arrêt de la ressource
 AddEventHandler('onResourceStop', function(resourceName)

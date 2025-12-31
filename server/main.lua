@@ -35,25 +35,24 @@ local function DetermineNPCAction(sellChance)
     local roll = math.random(100)
 
     if Config.Debug then
-        -- En mode debug, pas d'appel aux flics
-        if roll <= sellChance then
-            return 'accept'
-        elseif roll <= (sellChance + Config.NPCBehavior.refuse) then
-            return 'refuse'
-        else
-            return 'steal'
-        end
+        print(('[DEBUG] Roll: %d/100'):format(roll))
+        print(('[DEBUG] Chances: accept=0-%d, refuse=%d-%d, steal=%d-%d, callCops=%d-100'):format(
+            sellChance,
+            sellChance + 1, sellChance + Config.NPCBehavior.refuse,
+            sellChance + Config.NPCBehavior.refuse + 1, sellChance + Config.NPCBehavior.refuse + Config.NPCBehavior.steal,
+            sellChance + Config.NPCBehavior.refuse + Config.NPCBehavior.steal + 1
+        ))
+    end
+
+    -- Système de détermination de l'action (fonctionne en debug aussi maintenant)
+    if roll <= sellChance then
+        return 'accept'
+    elseif roll <= (sellChance + Config.NPCBehavior.refuse) then
+        return 'refuse'
+    elseif roll <= (sellChance + Config.NPCBehavior.refuse + Config.NPCBehavior.steal) then
+        return 'steal'
     else
-        -- Mode normal
-        if roll <= sellChance then
-            return 'accept'
-        elseif roll <= (sellChance + Config.NPCBehavior.refuse) then
-            return 'refuse'
-        elseif roll <= (sellChance + Config.NPCBehavior.refuse + Config.NPCBehavior.steal) then
-            return 'steal'
-        else
-            return 'callCops'
-        end
+        return 'callCops'
     end
 end
 
