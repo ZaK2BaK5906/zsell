@@ -116,9 +116,9 @@ $(document).ready(function() {
         const suggestedPrice = Math.floor((selectedDrug.minPrice + selectedDrug.maxPrice) / 2);
         $('#suggestedPrice').text('$' + suggestedPrice);
 
-        // Configurer les inputs (pas de limite max sur le prix pour permettre des prix abusifs)
+        // Configurer les inputs (blocage au prix max)
         $('#quantityInput').attr('max', selectedDrug.count).val(1);
-        $('#priceInput').attr('min', 0).removeAttr('max').val(suggestedPrice);
+        $('#priceInput').attr('min', selectedDrug.minPrice).attr('max', selectedDrug.maxPrice).val(suggestedPrice);
 
         // Mettre à jour l'icône
         let icon = 'fa-pills';
@@ -154,35 +154,29 @@ $(document).ready(function() {
     // Fonction pour mettre à jour l'indicateur de prix
     function updatePriceIndicator() {
         const price = parseInt($('#priceInput').val()) || 0;
-        const suggested = Math.floor((selectedDrug.minPrice + selectedDrug.maxPrice) / 2);
+        const min = selectedDrug.minPrice;
         const max = selectedDrug.maxPrice;
 
-        // Calculer le pourcentage par rapport au prix suggéré pour la barre
-        let percentage = Math.min(((price / suggested) * 50), 100);
+        // Calculer le pourcentage par rapport au min/max
+        const percentage = ((price - min) / (max - min)) * 100;
         $('#priceIndicator').css('width', percentage + '%');
 
         let text = '';
         let color = '';
 
-        // Messages escaladés en fonction du prix
-        if (price < suggested * 0.5) {
+        // Messages en fonction du prix (bloqué au max maintenant)
+        if (percentage <= 40) {
             text = '💰 Prix très bas - Vente facile mais peu rentable';
             color = '#11998e';
-        } else if (price <= suggested) {
-            text = '✅ Prix raisonnable - Bonnes chances de vente';
+        } else if (percentage <= 60) {
+            text = '✅ Prix équilibré - Bonnes chances de vente';
             color = '#4caf50';
-        } else if (price <= max) {
+        } else if (percentage <= 80) {
             text = '⚠️ Prix élevé - Risque de refus';
             color = '#ff9800';
-        } else if (price <= max * 1.5) {
-            text = '⚠️ Prix très élevé - Risque de vol !';
-            color = '#ff5722';
-        } else if (price <= max * 2) {
-            text = '🚨 DANGER - Tu vas te faire défoncer !';
-            color = '#ee0979';
         } else {
-            text = '💀 T\'ES FOU ?! Prépare-toi à manger une claque !';
-            color = '#d32f2f';
+            text = '🚨 Prix très élevé - Fort risque d\'appel police !';
+            color = '#ee0979';
         }
 
         $('#indicatorText').text(text).css('color', color);
@@ -206,12 +200,12 @@ $(document).ready(function() {
         const quantity = parseInt($('#quantityInput').val()) || 1;
         const price = parseInt($('#priceInput').val()) || 0;
 
-        // Valider uniquement la quantité (pas de limite sur le prix)
+        // Valider la quantité et le prix
         if (quantity < 1 || quantity > selectedDrug.count) {
             return;
         }
 
-        if (price <= 0) {
+        if (price < selectedDrug.minPrice || price > selectedDrug.maxPrice) {
             return;
         }
 

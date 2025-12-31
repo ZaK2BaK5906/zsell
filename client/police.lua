@@ -100,14 +100,27 @@ end
 
 -- Event pour recevoir une alerte de police
 RegisterNetEvent('zsell:policeAlert', function(data)
+    if Config.Debug then
+        print('^3[Z-SELL POLICE]^7 Event reçu: zsell:policeAlert')
+        print('^3[Z-SELL POLICE]^7 Coordonnées:', data.coords)
+    end
+
     -- Vérifier si le joueur est policier
-    if not IsPlayerPolice() then
+    local isPolice = IsPlayerPolice()
+    if Config.Debug then
+        print('^3[Z-SELL POLICE]^7 IsPlayerPolice() =', isPolice)
+    end
+
+    if not isPolice then
+        if Config.Debug then
+            print('^1[Z-SELL POLICE]^7 Joueur n\'est pas policier, alerte ignorée')
+        end
         return
     end
 
     if policeAlertActive then
         if Config.Debug then
-            print('[DEBUG] Une alerte est déjà active, ignorée')
+            print('^1[Z-SELL POLICE]^7 Une alerte est déjà active, ignorée')
         end
         return
     end
@@ -120,16 +133,22 @@ RegisterNetEvent('zsell:policeAlert', function(data)
     local location = streetName .. ", " .. zoneName
 
     if Config.Debug then
-        print('[DEBUG] Alerte de police reçue:', location)
+        print('^2[Z-SELL POLICE]^7 ✅ Alerte de police reçue:', location)
     end
 
     -- Jouer le son d'alerte
+    if Config.Debug then
+        print('^3[Z-SELL POLICE]^7 Envoi NUI: playSound')
+    end
     SendNUIMessage({
         type = 'playSound',
         sound = 'police_alert'
     })
 
     -- Afficher la notification UI
+    if Config.Debug then
+        print('^3[Z-SELL POLICE]^7 Envoi NUI: showPoliceAlert')
+    end
     SendNUIMessage({
         type = 'showPoliceAlert',
         location = location,
@@ -138,6 +157,9 @@ RegisterNetEvent('zsell:policeAlert', function(data)
     })
 
     -- Notification ox_lib en backup
+    if Config.Debug then
+        print('^3[Z-SELL POLICE]^7 Notification ox_lib envoyée')
+    end
     lib.notify({
         title = '🚨 APPEL D\'URGENCE',
         description = 'Vente de drogue signalée à ' .. location,

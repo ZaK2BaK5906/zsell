@@ -3,9 +3,9 @@ $(document).ready(function() {
     let autoHideTimer = null;
     let alertSound = null;
 
-    // Précharger le son
+    // Précharger le son (Note: le son est un placeholder vide pour l'instant)
     try {
-        alertSound = new Audio('../sounds/police_alert.ogg');
+        alertSound = new Audio('police_alert.ogg');
         alertSound.volume = 0.5;
     } catch(e) {
         console.log('Son non disponible:', e);
@@ -40,12 +40,14 @@ $(document).ready(function() {
 
     // Fonction pour afficher l'alerte
     function showAlert(data) {
+        console.log('[POLICE ALERT] showAlert appelée', data);
         currentAlert = data;
 
         // Mettre à jour les informations
         $('#alertLocation').text(data.location || 'Position inconnue');
         $('#alertTime').text(data.time || 'Il y a quelques instants');
 
+        console.log('[POLICE ALERT] Affichage de l\'alerte');
         // Afficher l'alerte
         $('#policeAlert').removeClass('hiding').fadeIn(300);
 

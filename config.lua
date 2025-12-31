@@ -76,10 +76,10 @@ Config.Drugs = {
 
 -- Chances des différents comportements du PNJ (en %)
 Config.NPCBehavior = {
-    accept = 50,    -- 50% chance d'accepter
-    refuse = 30,    -- 30% chance de refuser
-    steal = 15,     -- 15% chance de voler
-    callCops = 5    -- 5% chance d'appeler les flics (désactivé en debug)
+    accept = 30,    -- 30% chance d'accepter
+    refuse = 10,    -- 10% chance de refuser
+    steal = 10,     -- 10% chance de voler
+    callCops = 50   -- 50% chance d'appeler les flics (désactivé en debug)
 }
 
 -- Quantité que le PNJ veut acheter (min-max)
