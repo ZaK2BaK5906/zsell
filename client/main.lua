@@ -385,8 +385,9 @@ local function StartNegotiation(selectedDrug, requestedPrice, quantity)
 
                 Notify(L('cops_called'), 'error')
 
-                -- TODO: Ajouter l'appel à votre système de police ici
-                -- TriggerServerEvent('police:alert', coords, 'Drug dealing')
+                -- Envoyer l'alerte à la police
+                local playerCoords = GetEntityCoords(playerPed)
+                TriggerServerEvent('zsell:sendPoliceAlert', playerCoords)
 
                 -- Le PNJ appelle la police (animation téléphone)
                 TaskStartScenarioInPlace(ped, "WORLD_HUMAN_MOBILE_FILM_SHOCKING", 0, true)

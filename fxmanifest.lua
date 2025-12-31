@@ -26,7 +26,9 @@ ui_page 'nui/index.html'
 files {
     'nui/index.html',
     'nui/style.css',
-    'nui/script.js'
+    'nui/script.js',
+    'nui/police_alert.js',
+    'sounds/police_alert.ogg'
 }
 
 dependencies {
