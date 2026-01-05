@@ -18,37 +18,22 @@ end
 RegisterNetEvent('zsell:sendPoliceAlert', function(coords)
     local src = source
 
-    print('^3[Z-SELL SERVER]^7 Event reçu: zsell:sendPoliceAlert depuis joueur #' .. src)
-
     if not coords then
-        print('[Z-SELL] ^1ERREUR: Coordonnées manquantes pour l\'alerte police^7')
         return
     end
-
-    print(('[Z-SELL SERVER] Position: %.2f, %.2f, %.2f'):format(coords.x, coords.y, coords.z))
 
     -- Obtenir tous les policiers
     local officers = GetPoliceOfficers()
 
-    print(('[Z-SELL SERVER] Nombre de policiers trouvés: %d'):format(#officers))
-
     if #officers == 0 then
-        print('^1[Z-SELL SERVER] Aucun policier en service pour recevoir l\'alerte^7')
         return
     end
 
     -- Envoyer l'alerte à tous les policiers
     for _, officerId in pairs(officers) do
-        print(('^3[Z-SELL SERVER]^7 Envoi alerte au policier #%d'):format(officerId))
         TriggerClientEvent('zsell:policeAlert', officerId, {
             coords = coords,
             reporterId = src
         })
     end
-
-    print('^2[Z-SELL SERVER]^7 ✅ Alerte de police envoyée avec succès')
 end)
-
-if Config.Debug then
-    print('^2[Z-SELL]^7 Module de dispatch police chargé')
-end

@@ -51,10 +51,6 @@ local function CreatePoliceBlip(coords)
     SetBlipColour(radius, 1)
     SetBlipAlpha(radius, 128)
 
-    if Config.Debug then
-        print('[DEBUG] Blip créé aux coordonnées:', coords.x, coords.y, coords.z)
-    end
-
     -- Supprimer automatiquement après 5 minutes
     SetTimeout(300000, function()
         if currentBlip then
@@ -78,28 +74,18 @@ local function SetGPSRoute(coords)
     -- Créer la nouvelle route
     SetNewWaypoint(coords.x, coords.y)
     currentRoute = true
-
-    if Config.Debug then
-        print('[DEBUG] Route GPS définie vers:', coords.x, coords.y)
-    end
 end
 
 -- Event pour recevoir une alerte de police
 RegisterNetEvent('zsell:policeAlert', function(data)
-    print('^3[Z-SELL POLICE]^7 Event reçu: zsell:policeAlert')
-    print('^3[Z-SELL POLICE]^7 Coordonnées:', data.coords)
-
     -- Vérifier si le joueur est policier
     local isPolice = IsPlayerPolice()
-    print('^3[Z-SELL POLICE]^7 IsPlayerPolice() =', isPolice)
 
     if not isPolice then
-        print('^1[Z-SELL POLICE]^7 Joueur n\'est pas policier, alerte ignorée')
         return
     end
 
     if policeAlertActive then
-        print('^1[Z-SELL POLICE]^7 Une alerte est déjà active, ignorée')
         return
     end
 
@@ -110,17 +96,13 @@ RegisterNetEvent('zsell:policeAlert', function(data)
     local zoneName = GetZoneName(data.coords)
     local location = streetName .. ", " .. zoneName
 
-    print('^2[Z-SELL POLICE]^7 ✅ Alerte de police reçue:', location)
-
     -- Jouer le son d'alerte
-    print('^3[Z-SELL POLICE]^7 Envoi NUI: playSound')
     SendNUIMessage({
         type = 'playSound',
         sound = 'police_alert'
     })
 
     -- Afficher la notification UI
-    print('^3[Z-SELL POLICE]^7 Envoi NUI: showPoliceAlert')
     SendNUIMessage({
         type = 'showPoliceAlert',
         location = location,
@@ -128,7 +110,6 @@ RegisterNetEvent('zsell:policeAlert', function(data)
     })
 
     -- CRÉER DIRECTEMENT LE GPS + BLIP (pas besoin d'accepter)
-    print('^2[Z-SELL POLICE]^7 Création GPS + Blip automatique')
     CreatePoliceBlip(data.coords)
     SetGPSRoute(data.coords)
 
@@ -156,8 +137,3 @@ AddEventHandler('onResourceStop', function(resourceName)
 
     policeAlertActive = false
 end)
-
-if Config.Debug then
-    print('^2[Z-SELL]^7 Module police chargé')
-    print('^3[Z-SELL]^7 Les policiers recevront des alertes personnalisées')
-end

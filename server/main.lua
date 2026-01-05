@@ -23,10 +23,6 @@ local function GetSellChance(drugConfig, requestedPrice)
         end
     end
 
-    if Config.Debug then
-        print(('[DEBUG] Prix: %s$ (%d%% du max) = %d%% de chance'):format(requestedPrice, pricePercent, chance))
-    end
-
     return chance
 end
 
@@ -34,17 +30,7 @@ end
 local function DetermineNPCAction(sellChance)
     local roll = math.random(100)
 
-    if Config.Debug then
-        print(('[DEBUG] Roll: %d/100'):format(roll))
-        print(('[DEBUG] Chances: accept=0-%d, refuse=%d-%d, steal=%d-%d, callCops=%d-100'):format(
-            sellChance,
-            sellChance + 1, sellChance + Config.NPCBehavior.refuse,
-            sellChance + Config.NPCBehavior.refuse + 1, sellChance + Config.NPCBehavior.refuse + Config.NPCBehavior.steal,
-            sellChance + Config.NPCBehavior.refuse + Config.NPCBehavior.steal + 1
-        ))
-    end
-
-    -- Système de détermination de l'action (fonctionne en debug aussi maintenant)
+    -- Système de détermination de l'action
     if roll <= sellChance then
         return 'accept'
     elseif roll <= (sellChance + Config.NPCBehavior.refuse) then
@@ -79,9 +65,6 @@ lib.callback.register('zsell:processSale', function(source, drugItem, requestedP
 
     -- Vérifier que le prix est dans la fourchette autorisée
     if requestedPrice < drugConfig.minPrice or requestedPrice > drugConfig.maxPrice then
-        if Config.Debug then
-            print(('[DEBUG] Prix invalide: %s$ (min: %s$, max: %s$)'):format(requestedPrice, drugConfig.minPrice, drugConfig.maxPrice))
-        end
         return {
             success = false,
             message = 'Prix invalide'
@@ -93,10 +76,6 @@ lib.callback.register('zsell:processSale', function(source, drugItem, requestedP
 
     -- Déterminer l'action du PNJ
     local action = DetermineNPCAction(sellChance)
-
-    if Config.Debug then
-        print(('[DEBUG] Action du PNJ: %s'):format(action))
-    end
 
     if action == 'accept' then
         -- Le PNJ accepte
@@ -112,13 +91,9 @@ lib.callback.register('zsell:processSale', function(source, drugItem, requestedP
         local removed = exports.ox_inventory:RemoveItem(src, drugItem, wantedQuantity)
 
         if removed then
-            -- Ajouter l'argent
+            -- Ajouter l'argent sale
             local totalPrice = requestedPrice * wantedQuantity
-            exports.ox_inventory:AddItem(src, 'money', totalPrice)
-
-            if Config.Debug then
-                print(('[DEBUG] Vente réussie: %d x %s pour %s$'):format(wantedQuantity, drugItem, totalPrice))
-            end
+            exports.ox_inventory:AddItem(src, 'black_money', totalPrice)
 
             return {
                 success = true,
@@ -135,10 +110,6 @@ lib.callback.register('zsell:processSale', function(source, drugItem, requestedP
 
     elseif action == 'refuse' then
         -- Le PNJ refuse
-        if Config.Debug then
-            print('[DEBUG] Le PNJ a refusé la vente')
-        end
-
         return {
             success = true,
             action = 'refuse'
@@ -150,10 +121,6 @@ lib.callback.register('zsell:processSale', function(source, drugItem, requestedP
 
         if count >= stolenQuantity then
             exports.ox_inventory:RemoveItem(src, drugItem, stolenQuantity)
-
-            if Config.Debug then
-                print(('[DEBUG] Le PNJ a volé %d x %s'):format(stolenQuantity, drugItem))
-            end
         end
 
         return {
@@ -164,14 +131,6 @@ lib.callback.register('zsell:processSale', function(source, drugItem, requestedP
 
     elseif action == 'callCops' then
         -- Le PNJ appelle les flics
-        if Config.Debug then
-            print('[DEBUG] Le PNJ voulait appeler les flics (désactivé en debug)')
-        end
-
-        -- TODO: Intégrer avec votre système de police
-        -- local playerCoords = GetEntityCoords(GetPlayerPed(src))
-        -- TriggerEvent('police:alert', playerCoords, 'Vente de drogue signalée')
-
         return {
             success = true,
             action = 'callCops'
@@ -183,10 +142,3 @@ lib.callback.register('zsell:processSale', function(source, drugItem, requestedP
         message = 'Erreur inconnue'
     }
 end)
-
--- Logs en mode debug
-if Config.Debug then
-    print('^2[Z-SELL]^7 Script de vente de drogue chargé en mode DEBUG')
-    print('^3[Z-SELL]^7 ' .. #Config.PedLocations .. ' emplacements de dealers configurés')
-    print('^3[Z-SELL]^7 ' .. #Config.Drugs .. ' types de drogues configurés')
-end

@@ -26,10 +26,6 @@ local function IsPedOnCooldown(ped)
             local minutes = math.floor(timeLeft / 60000)
             local seconds = math.floor((timeLeft % 60000) / 1000)
 
-            if Config.Debug then
-                print(('[DEBUG] PNJ en cooldown: %dm %ds restantes'):format(minutes, seconds))
-            end
-
             Notify(('Ce client a besoin de temps. Revenez dans %dm %ds'):format(minutes, seconds), 'error')
             return true
         else
@@ -44,10 +40,6 @@ end
 -- Fonction pour mettre un PNJ en cooldown
 local function SetPedCooldown(ped)
     pedCooldowns[ped] = GetGameTimer() + (Config.PedCooldown * 1000)
-
-    if Config.Debug then
-        print(('[DEBUG] PNJ mis en cooldown pour %d secondes'):format(Config.PedCooldown))
-    end
 end
 
 -- Fonction pour vérifier si le joueur est dans une zone de vente autorisée
@@ -58,15 +50,8 @@ local function IsPlayerInSalesZone()
     for _, zone in ipairs(Config.SalesZones) do
         local distance = #(playerCoords - zone.coords)
         if distance <= zone.radius then
-            if Config.Debug then
-                print(('[DEBUG] Joueur dans la zone de vente: %s (distance: %.2fm)'):format(zone.name, distance))
-            end
             return true, zone.name
         end
-    end
-
-    if Config.Debug then
-        print('[DEBUG] Joueur hors de toutes les zones de vente')
     end
 
     return false, nil
@@ -124,10 +109,6 @@ CreateThread(function()
                 addedPeds[pedId] = nil
                 busyPeds[pedId] = nil
                 pedCooldowns[pedId] = nil
-
-                if Config.Debug then
-                    print(('[DEBUG] Nettoyage du PNJ (ID: %d) - n\'existe plus ou invalide'):format(pedId))
-                end
             end
         end
 
@@ -189,11 +170,6 @@ CreateThread(function()
                         size = vec3(1.5, 1.5, 2.0)
                     })
                     addedPeds[ped] = true
-
-                    if Config.Debug then
-                        local coords = GetEntityCoords(ped)
-                        print(('[DEBUG] Target ajouté au PNJ (ID: %d) à %.2f, %.2f, %.2f'):format(ped, coords.x, coords.y, coords.z))
-                    end
                 end
             end
         end
@@ -469,15 +445,4 @@ AddEventHandler('onResourceStop', function(resourceName)
     busyPeds = {}
     pedCooldowns = {}
     currentNegotiation = nil
-
-    if Config.Debug then
-        print('[DEBUG] Cleanup effectué')
-    end
 end)
-
--- Message de démarrage
-if Config.Debug then
-    print('^2[Z-SELL]^7 Script de vente de drogue chargé')
-    print('^3[Z-SELL]^7 Scanner des PNJ actif (check toutes les 5 secondes)')
-    print('^3[Z-SELL]^7 Approchez-vous de n\'importe quel PNJ pour vendre')
-end
