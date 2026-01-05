@@ -75,10 +75,17 @@ end
 -- Validation du PNJ (comme dans le code de référence)
 function IsValidPed(ped)
     if not DoesEntityExist(ped) or IsPedAPlayer(ped) then return false end
-    if IsPedDeadOrDying(ped, true) or IsPedInAnyVehicle(ped, false) then return false end
+    if IsPedDeadOrDying(ped, true) or IsPedInAnyVehicle(ped, true) then return false end
     if IsPedSwimming(ped) or IsPedInCombat(ped, 0) or IsPedFleeing(ped) then return false end
     if IsPedStill(ped) or IsPedUsingAnyScenario(ped) then return false end
     if not IsPedHuman(ped) then return false end
+    -- Vérifier que le ped n'est pas un joueur réel (double check)
+    local players = GetActivePlayers()
+    for _, player in ipairs(players) do
+        if GetPlayerPed(player) == ped then
+            return false
+        end
+    end
     return true
 end
 
@@ -110,59 +117,83 @@ end
 CreateThread(function()
     while true do
         Wait(5000)
-        local peds = GetGamePool('CPed')
-        for _, ped in pairs(peds) do
-            if not addedPeds[ped] and IsValidPed(ped) then
-                exports.ox_target:addLocalEntity(ped, {
-                    {
-                        name = 'sell_drugs',
-                        icon = 'fas fa-cannabis',
-                        label = L('target_sell_drugs'),
-                        distance = 2.5,
-                        onSelect = function(data)
-                            if busyPeds[ped] then
-                                Notify(L('ped_busy'), 'error')
-                                return
-                            end
 
-                            -- Vérifier si le PNJ est en cooldown
-                            if IsPedOnCooldown(ped) then
-                                return
-                            end
-
-                            -- Vérifier si le joueur est dans une zone de vente autorisée
-                            local inZone, zoneName = IsPlayerInSalesZone()
-                            if not inZone then
-                                -- Le PNJ refuse immédiatement car pas dans une zone de vente
-                                local playerPed = PlayerPedId()
-                                TaskTurnPedToFaceEntity(ped, playerPed, 1000)
-                                Wait(500)
-
-                                lib.notify({
-                                    title = 'Client',
-                                    description = L('npc_outside_zone'),
-                                    type = 'error',
-                                    duration = 4000
-                                })
-
-                                Notify(L('outside_zone'), 'error')
-                                return
-                            end
-
-                            PlayConversationAnimationForPNJ(ped)
-                            OpenDrugSelectionUI(ped)
-                        end
-                    }
-                }, {
-                    distance = 3.0,
-                    bone = nil,
-                    size = vec3(1.5, 1.5, 2.0)
-                })
-                addedPeds[ped] = true
+        -- Nettoyer les peds qui n'existent plus
+        for pedId, _ in pairs(addedPeds) do
+            if not DoesEntityExist(pedId) or not IsValidPed(pedId) then
+                addedPeds[pedId] = nil
+                busyPeds[pedId] = nil
+                pedCooldowns[pedId] = nil
 
                 if Config.Debug then
-                    local coords = GetEntityCoords(ped)
-                    print(('[DEBUG] Target ajouté au PNJ (ID: %d) à %.2f, %.2f, %.2f'):format(ped, coords.x, coords.y, coords.z))
+                    print(('[DEBUG] Nettoyage du PNJ (ID: %d) - n\'existe plus ou invalide'):format(pedId))
+                end
+            end
+        end
+
+        local peds = GetGamePool('CPed')
+        for _, ped in pairs(peds) do
+            -- Vérifier que le ped est valide ET qu'il n'a pas déjà le target
+            if not addedPeds[ped] and IsValidPed(ped) then
+                -- Sécurité supplémentaire : vérifier que l'entité existe toujours
+                if DoesEntityExist(ped) then
+                    exports.ox_target:addLocalEntity(ped, {
+                        {
+                            name = 'sell_drugs',
+                            icon = 'fas fa-cannabis',
+                            label = L('target_sell_drugs'),
+                            distance = 2.5,
+                            onSelect = function(data)
+                                -- Vérifier que le ped existe encore au moment du clic
+                                if not DoesEntityExist(ped) or not IsValidPed(ped) then
+                                    Notify('Ce PNJ n\'est plus disponible', 'error')
+                                    return
+                                end
+
+                                if busyPeds[ped] then
+                                    Notify(L('ped_busy'), 'error')
+                                    return
+                                end
+
+                                -- Vérifier si le PNJ est en cooldown
+                                if IsPedOnCooldown(ped) then
+                                    return
+                                end
+
+                                -- Vérifier si le joueur est dans une zone de vente autorisée
+                                local inZone, zoneName = IsPlayerInSalesZone()
+                                if not inZone then
+                                    -- Le PNJ refuse immédiatement car pas dans une zone de vente
+                                    local playerPed = PlayerPedId()
+                                    TaskTurnPedToFaceEntity(ped, playerPed, 1000)
+                                    Wait(500)
+
+                                    lib.notify({
+                                        title = 'Client',
+                                        description = L('npc_outside_zone'),
+                                        type = 'error',
+                                        duration = 4000
+                                    })
+
+                                    Notify(L('outside_zone'), 'error')
+                                    return
+                                end
+
+                                PlayConversationAnimationForPNJ(ped)
+                                OpenDrugSelectionUI(ped)
+                            end
+                        }
+                    }, {
+                        distance = 3.0,
+                        bone = nil,
+                        size = vec3(1.5, 1.5, 2.0)
+                    })
+                    addedPeds[ped] = true
+
+                    if Config.Debug then
+                        local coords = GetEntityCoords(ped)
+                        print(('[DEBUG] Target ajouté au PNJ (ID: %d) à %.2f, %.2f, %.2f'):format(ped, coords.x, coords.y, coords.z))
+                    end
                 end
             end
         end
