@@ -3,6 +3,10 @@ local currentNegotiation = nil
 local busyPeds = {}
 local pedCooldowns = {} -- Track des PNJ en cooldown avec timestamp
 
+-- Cache pour optimisation
+local playerCache = {}
+local lastScanPosition = nil
+
 -- Fonction pour obtenir la traduction
 local function L(key)
     return Locales[Config.Locale][key] or key
@@ -57,20 +61,35 @@ local function IsPlayerInSalesZone()
     return false, nil
 end
 
--- Validation du PNJ (comme dans le code de référence)
-function IsValidPed(ped)
-    if not DoesEntityExist(ped) or IsPedAPlayer(ped) then return false end
-    if IsPedDeadOrDying(ped, true) or IsPedInAnyVehicle(ped, true) then return false end
-    if IsPedSwimming(ped) or IsPedInCombat(ped, 0) or IsPedFleeing(ped) then return false end
-    if IsPedStill(ped) or IsPedUsingAnyScenario(ped) then return false end
-    if not IsPedHuman(ped) then return false end
-    -- Vérifier que le ped n'est pas un joueur réel (double check)
+-- Mettre à jour le cache des joueurs
+local function UpdatePlayerCache()
+    playerCache = {}
     local players = GetActivePlayers()
     for _, player in ipairs(players) do
-        if GetPlayerPed(player) == ped then
-            return false
-        end
+        playerCache[GetPlayerPed(player)] = true
     end
+end
+
+-- Validation du PNJ optimisée
+function IsValidPed(ped)
+    -- Vérifications rapides d'abord
+    if not DoesEntityExist(ped) then return false end
+    if IsPedAPlayer(ped) then return false end
+    if playerCache[ped] then return false end -- Cache des joueurs
+
+    -- Vérifier que c'est un ped "networked" (évite les peds temporaires)
+    if not NetworkGetEntityIsNetworked(ped) then return false end
+
+    -- Vérifications plus coûteuses
+    if IsPedDeadOrDying(ped, true) then return false end
+    if IsPedInAnyVehicle(ped, true) then return false end
+    if IsPedSwimming(ped) then return false end
+    if IsPedInCombat(ped, 0) then return false end
+    if IsPedFleeing(ped) then return false end
+    if IsPedStill(ped) then return false end
+    if IsPedUsingAnyScenario(ped) then return false end
+    if not IsPedHuman(ped) then return false end
+
     return true
 end
 
@@ -98,81 +117,139 @@ function ReleasePed(ped)
     end
 end
 
--- Scanner tous les PNJ et ajouter le target (comme dans le code de référence)
+-- Thread pour mettre à jour le cache des joueurs régulièrement
 CreateThread(function()
     while true do
-        Wait(5000)
+        UpdatePlayerCache()
+        Wait(10000) -- Mise à jour toutes les 10 secondes
+    end
+end)
 
-        -- Nettoyer les peds qui n'existent plus
+-- Scanner optimisé avec distance et limite
+CreateThread(function()
+    while true do
+        Wait(Config.ScanInterval)
+
+        local playerPed = PlayerPedId()
+        local playerCoords = GetEntityCoords(playerPed)
+
+        -- Vérifier si le joueur a bougé suffisamment pour rescanner
+        if lastScanPosition and #(playerCoords - lastScanPosition) < Config.MinMoveDistance then
+            goto continue
+        end
+
+        lastScanPosition = playerCoords
+
+        -- 1. Nettoyer les peds qui n'existent plus OU trop loin
         for pedId, _ in pairs(addedPeds) do
-            if not DoesEntityExist(pedId) or not IsValidPed(pedId) then
+            local shouldClean = false
+
+            if not DoesEntityExist(pedId) then
+                shouldClean = true
+            else
+                local pedCoords = GetEntityCoords(pedId)
+                local distance = #(playerCoords - pedCoords)
+
+                -- Nettoyer si trop loin ou invalide
+                if distance > Config.CleanupDistance or not IsValidPed(pedId) then
+                    shouldClean = true
+                    -- Supprimer le target ox_target pour libérer les ressources
+                    exports.ox_target:removeLocalEntity(pedId, {'sell_drugs'})
+                end
+            end
+
+            if shouldClean then
                 addedPeds[pedId] = nil
                 busyPeds[pedId] = nil
                 pedCooldowns[pedId] = nil
             end
         end
 
+        -- 2. Scanner uniquement les peds proches (optimisation distance)
         local peds = GetGamePool('CPed')
+        local scannedCount = 0
+
         for _, ped in pairs(peds) do
-            -- Vérifier que le ped est valide ET qu'il n'a pas déjà le target
-            if not addedPeds[ped] and IsValidPed(ped) then
-                -- Sécurité supplémentaire : vérifier que l'entité existe toujours
-                if DoesEntityExist(ped) then
-                    exports.ox_target:addLocalEntity(ped, {
-                        {
-                            name = 'sell_drugs',
-                            icon = 'fas fa-cannabis',
-                            label = L('target_sell_drugs'),
-                            distance = 2.5,
-                            onSelect = function(data)
-                                -- Vérifier que le ped existe encore au moment du clic
-                                if not DoesEntityExist(ped) or not IsValidPed(ped) then
-                                    Notify('Ce PNJ n\'est plus disponible', 'error')
-                                    return
-                                end
-
-                                if busyPeds[ped] then
-                                    Notify(L('ped_busy'), 'error')
-                                    return
-                                end
-
-                                -- Vérifier si le PNJ est en cooldown
-                                if IsPedOnCooldown(ped) then
-                                    return
-                                end
-
-                                -- Vérifier si le joueur est dans une zone de vente autorisée
-                                local inZone, zoneName = IsPlayerInSalesZone()
-                                if not inZone then
-                                    -- Le PNJ refuse immédiatement car pas dans une zone de vente
-                                    local playerPed = PlayerPedId()
-                                    TaskTurnPedToFaceEntity(ped, playerPed, 1000)
-                                    Wait(500)
-
-                                    lib.notify({
-                                        title = 'Client',
-                                        description = L('npc_outside_zone'),
-                                        type = 'error',
-                                        duration = 4000
-                                    })
-
-                                    Notify(L('outside_zone'), 'error')
-                                    return
-                                end
-
-                                PlayConversationAnimationForPNJ(ped)
-                                OpenDrugSelectionUI(ped)
-                            end
-                        }
-                    }, {
-                        distance = 3.0,
-                        bone = nil,
-                        size = vec3(1.5, 1.5, 2.0)
-                    })
-                    addedPeds[ped] = true
-                end
+            -- Limiter le nombre de peds traités par scan
+            if scannedCount >= Config.MaxPedsPerScan then
+                break
             end
+
+            -- Skip si déjà ajouté
+            if addedPeds[ped] then
+                goto continue_ped
+            end
+
+            -- Vérifier la distance AVANT les checks coûteux
+            local pedCoords = GetEntityCoords(ped)
+            local distance = #(playerCoords - pedCoords)
+
+            if distance > Config.ScanDistance then
+                goto continue_ped
+            end
+
+            -- Maintenant faire les checks de validité
+            if IsValidPed(ped) and DoesEntityExist(ped) then
+                scannedCount = scannedCount + 1
+
+                exports.ox_target:addLocalEntity(ped, {
+                    {
+                        name = 'sell_drugs',
+                        icon = 'fas fa-cannabis',
+                        label = L('target_sell_drugs'),
+                        distance = 2.5,
+                        onSelect = function(data)
+                            -- Vérifier que le ped existe encore au moment du clic
+                            if not DoesEntityExist(ped) or not IsValidPed(ped) then
+                                Notify('Ce PNJ n\'est plus disponible', 'error')
+                                return
+                            end
+
+                            if busyPeds[ped] then
+                                Notify(L('ped_busy'), 'error')
+                                return
+                            end
+
+                            -- Vérifier si le PNJ est en cooldown
+                            if IsPedOnCooldown(ped) then
+                                return
+                            end
+
+                            -- Vérifier si le joueur est dans une zone de vente autorisée
+                            local inZone, zoneName = IsPlayerInSalesZone()
+                            if not inZone then
+                                -- Le PNJ refuse immédiatement car pas dans une zone de vente
+                                local playerPed = PlayerPedId()
+                                TaskTurnPedToFaceEntity(ped, playerPed, 1000)
+                                Wait(500)
+
+                                lib.notify({
+                                    title = 'Client',
+                                    description = L('npc_outside_zone'),
+                                    type = 'error',
+                                    duration = 4000
+                                })
+
+                                Notify(L('outside_zone'), 'error')
+                                return
+                            end
+
+                            PlayConversationAnimationForPNJ(ped)
+                            OpenDrugSelectionUI(ped)
+                        end
+                    }
+                }, {
+                    distance = 3.0,
+                    bone = nil,
+                    size = vec3(1.5, 1.5, 2.0)
+                })
+                addedPeds[ped] = true
+            end
+
+            ::continue_ped::
         end
+
+        ::continue::
     end
 end)
 

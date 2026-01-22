@@ -12,6 +12,13 @@ Config.InteractionDistance = 2.5
 -- Cooldown entre deux ventes au même PNJ (en secondes)
 Config.PedCooldown = 300 -- 5 minutes
 
+-- Paramètres d'optimisation du scanner
+Config.ScanDistance = 50.0 -- Distance de scan des PNJs (en mètres)
+Config.CleanupDistance = 100.0 -- Distance pour supprimer les targets trop loin
+Config.ScanInterval = 30000 -- Intervalle de scan (en ms) - 30 secondes
+Config.MinMoveDistance = 20.0 -- Distance minimale de déplacement pour rescanner
+Config.MaxPedsPerScan = 20 -- Nombre max de PNJs traités par scan
+
 -- Zones de vente autorisées (hors de ces zones, les PNJ refusent automatiquement)
 Config.SalesZones = {
     {
