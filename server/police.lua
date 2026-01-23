@@ -1,13 +1,19 @@
 -- Système de dispatch pour la police
 ESX = exports['es_extended']:getSharedObject()
 
--- Fonction pour obtenir tous les joueurs avec le job police
+-- Fonction pour obtenir tous les joueurs avec le job police ou sheriff
 local function GetPoliceOfficers()
     local officers = {}
 
-    -- ESX activé
-    local xPlayers = ESX.GetExtendedPlayers('job', 'police')
-    for _, xPlayer in pairs(xPlayers) do
+    -- ESX activé - Police
+    local xPolice = ESX.GetExtendedPlayers('job', 'police')
+    for _, xPlayer in pairs(xPolice) do
+        table.insert(officers, xPlayer.source)
+    end
+
+    -- ESX activé - Sheriff
+    local xSheriff = ESX.GetExtendedPlayers('job', 'sheriff')
+    for _, xPlayer in pairs(xSheriff) do
         table.insert(officers, xPlayer.source)
     end
 

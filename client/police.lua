@@ -5,11 +5,11 @@ local policeAlertActive = false
 local currentBlip = nil
 local currentRoute = nil
 
--- Fonction pour vérifier si le joueur est policier
+-- Fonction pour vérifier si le joueur est policier ou sheriff
 local function IsPlayerPolice()
     -- ESX activé
     local PlayerData = ESX.GetPlayerData()
-    return PlayerData.job and PlayerData.job.name == 'police'
+    return PlayerData.job and (PlayerData.job.name == 'police' or PlayerData.job.name == 'sheriff')
 end
 
 -- Fonction pour obtenir le nom de la rue

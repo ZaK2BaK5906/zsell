@@ -35,6 +35,21 @@ Config.SalesZones = {
         name = 'Vinewood',
         coords = vector3(374.36, 423.48, 145.68), -- Vinewood
         radius = 450.0
+    },
+    {
+        name = 'Paleto Bay',
+        coords = vector3(-378.84, 6062.02, 31.50), -- Paleto Bay
+        radius = 400.0
+    },
+    {
+        name = 'Sandy Shores',
+        coords = vector3(1961.92, 3740.48, 32.34), -- Sandy Shores
+        radius = 450.0
+    },
+    {
+        name = 'Grapeseed',
+        coords = vector3(1699.92, 4924.36, 42.06), -- Grapeseed
+        radius = 350.0
     }
 }
 
